@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Party Planner{% endblock %}
+{% block content %}
+<div class="planner-box">
+  <h2>🎉 Party Budget Planner</h2>
+  <p class="muted">Tell us about your event — our AI will allocate your budget smartly.</p>
+  <form id="partyForm" class="form">
+    <label>Total Budget (INR) <input type="number" name="total_budget" required min="1000" value="100000"></label>
+    <label>Party Type
+      <select name="party_type">
+        <option>Birthday</option><option>Wedding</option><option>Corporate</option>
+        <option>Anniversary</option><option>Housewarming</option>
+      </select>
+    </label>
+    <label>Number of Guests <input type="number" name="num_guests" required min="1" value="30"></label>
+    <label>Venue Type <input type="text" name="venue_type" value="Indoor"></label>
+    <div class="row-3">
+      <label><input type="checkbox" name="needs_catering" checked> Catering</label>
+      <label><input type="checkbox" name="needs_decoration" checked> Decoration</label>
+      <label><input type="checkbox" name="needs_entertainment"> Entertainment</label>
+    </div>
+    <label>Additional Notes <textarea name="additional_requirements" rows="2"></textarea></label>
+    <button type="submit" class="btn btn-primary btn-block">Generate Recommendations ✨</button>
+    <p id="msg" class="msg"></p>
+  </form>
+</div>
+<div id="results"></div>
+<script>
+document.getElementById('partyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('msg');
+  msg.textContent = '🤖 AI is planning your party…'; msg.style.color = '#555';
+  const fd = new FormData(e.target);
+  const payload = {
+    total_budget: parseFloat(fd.get('total_budget')),
+    party_type: fd.get('party_type'),
+    num_guests: parseInt(fd.get('num_guests')),
+    venue_type: fd.get('venue_type') || '',
+    needs_catering: fd.get('needs_catering') === 'on',
+    needs_decoration: fd.get('needs_decoration') === 'on',
+    needs_entertainment: fd.get('needs_entertainment') === 'on',
+    additional_requirements: fd.get('additional_requirements') || '',
+  };
+  try {
+    const r = await fetch('/generate-party', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) throw new Error('Failed. Are you logged in?');
+    renderParty(await r.json());
+    msg.textContent = '✅ Done!'; msg.style.color = 'green';
+  } catch (err) { msg.textContent = '❌ ' + err.message; msg.style.color = 'red'; }
+});
+function renderParty(d) {
+  let html = `<div class="results-box"><h2>🎉 Party Recommendations</h2>
+    <p><strong>Total:</strong> ₹${d.total_budget.toFixed(2)} · <strong>Remaining:</strong> ₹${(d.remaining_budget||0).toFixed(2)}</p>`;
+  (d.budget_breakdown||[]).forEach(cat => {
+    html += `<div class="cat-block"><h3>${cat.category} — ₹${cat.allocation.toFixed(2)}</h3>`;
+    (cat.items||[]).forEach(it => {
+      html += `<div class="item-card"><h4>${it.name}</h4>
+        <p>${it.description}</p><p><strong>≈ ₹${it.estimated_price.toFixed(2)}</strong></p>
+        ${linksHtml(it.shopping_links)}</div>`;
+    });
+    html += `</div>`;
+  });
+  if (d.venue_suggestions?.length) {
+    html += `<div class="cat-block"><h3>🏛️ Venue Suggestions</h3>`;
+    d.venue_suggestions.forEach(v => {
+      html += `<div class="item-card"><h4>${v.name} (${v.type})</h4>
+        <p>Capacity: ${v.capacity} · ≈ ₹${v.estimated_cost.toFixed(2)}</p>
+        ${linksHtml(v.shopping_links)}</div>`;
+    });
+    html += `</div>`;
+  }
+  if (d.additional_suggestions?.length) {
+    html += `<div class="tips"><h3>💡 Tips</h3><ul>`;
+    d.additional_suggestions.forEach(t => html += `<li>${t}</li>`);
+    html += `</ul></div>`;
+  }
+  html += `</div>`;
+  document.getElementById('results').innerHTML = html;
+}
+function linksHtml(links) {
+  if (!links) return '';
+  let out = '<div class="links">';
+  for (const [k, v] of Object.entries(links))
+    out += `<a href="${v}" target="_blank" rel="noopener" class="link-pill">${k} →</a>`;
+  return out + '</div>';
+}
+</script>
+{% endblock %}

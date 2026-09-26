@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="dash-hero">
+  <h1>Welcome, {{ user.full_name or user.username }}! 👋</h1>
+  <p>Choose a budget planner to get started.</p>
+</section>
+<section class="planners">
+  <div class="card-grid">
+    <div class="card card-link" onclick="location.href='/home-planner'">
+      <div class="card-icon">🏠</div><h3>Home Budget Planner</h3>
+      <p>Plan your interior design budget with AI-powered recommendations.</p>
+      <button class="btn btn-primary btn-block">Get Started</button>
+    </div>
+    <div class="card card-link" onclick="location.href='/party-planner'">
+      <div class="card-icon">🎉</div><h3>Party Budget Planner</h3>
+      <p>Plan your event with allocations for venue, catering, and decor.</p>
+      <button class="btn btn-primary btn-block">Get Started</button>
+    </div>
+    <div class="card card-link" onclick="location.href='/jewelry-planner'">
+      <div class="card-icon">💎</div><h3>Jewelry Budget Planner</h3>
+      <p>Jewelry that matches your outfit and stays within budget.</p>
+      <button class="btn btn-primary btn-block">Get Started</button>
+    </div>
+  </div>
+</section>
+{% if recent %}
+<section class="recent">
+  <h2>Recent Activity</h2>
+  <div class="history-list">
+    {% for item in recent %}
+      <div class="history-item">
+        <div class="history-badge">
+          {% if item.recommendation_type == 'home' %}🏠
+          {% elif item.recommendation_type == 'party' %}🎉
+          {% else %}💎{% endif %}
+        </div>
+        <div>
+          <strong>{{ item.recommendation_type|capitalize }} Budget Plan</strong>
+          <p class="muted">Budget: ₹{{ '%.2f'|format(item.input_data.total_budget) }} — {{ item.timestamp[:19] }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

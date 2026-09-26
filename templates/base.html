@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}PocketSmart AI{% endblock %}</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-brand">💼 PocketSmart</a>
+    <div class="nav-links">
+      {% if user %}
+        <a href="/dashboard">Dashboard</a>
+        <a href="/home-planner">🏠 Home</a>
+        <a href="/party-planner">🎉 Party</a>
+        <a href="/jewelry-planner">💎 Jewelry</a>
+        <a href="/history">🕘 History</a>
+        <form action="/logout" method="post" style="display:inline">
+          <button class="btn-link" type="submit">Logout</button>
+        </form>
+      {% else %}
+        <a href="/login">Sign In</a>
+        <a href="/register" class="btn btn-primary">Get Started</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+<main class="container">{% block content %}{% endblock %}</main>
+<footer class="footer">
+  <div class="container">
+    <p>© 2025 PocketSmart AI. Powered by Gemini 1.5 Flash Pro.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Sign In — PocketSmart AI{% endblock %}
+{% block content %}
+<div class="auth-box">
+  <h2>Welcome Back</h2>
+  <p class="muted">Sign in to access your personalized budget planners.</p>
+
+  {% if error %}
+    <p class="msg" style="color:#ef4444; background:#fee2e2; padding:10px; border-radius:6px; margin-bottom:16px;">
+      ❌ {{ error }}
+    </p>
+  {% endif %}
+  {% if success %}
+    <p class="msg" style="color:#10b981; background:#d1fae5; padding:10px; border-radius:6px; margin-bottom:16px;">
+      ✅ {{ success }}
+    </p>
+  {% endif %}
+
+  <form action="/login" method="post" class="form">
+    <label>Username
+      <input type="text" name="username" required autocomplete="username">
+    </label>
+    <label>Password
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+  </form>
+
+  <p class="muted center" style="margin-top:16px;">
+    No account? <a href="/register">Register here</a>
+  </p>
+</div>
+{% endblock %}

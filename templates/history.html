@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1 class="page-title">🕘 Recommendation History</h1>
+{% if not history %}
+  <p class="muted">No recommendations yet. Start with a planner above!</p>
+{% else %}
+  <div class="history-list">
+    {% for item in history %}
+      <div class="history-item">
+        <div class="history-badge">
+          {% if item.recommendation_type == 'home' %}🏠
+          {% elif item.recommendation_type == 'party' %}🎉
+          {% else %}💎{% endif %}
+        </div>
+        <div style="flex:1">
+          <strong>{{ item.recommendation_type|capitalize }} Budget Plan</strong>
+          <p class="muted">₹{{ '%.2f'|format(item.input_data.total_budget) }} · {{ item.timestamp[:19].replace('T', ' ') }}</p>
+          <details>
+            <summary class="muted">View details</summary>
+            <pre class="json-pre">{{ item.full_result | tojson(indent=2) }}</pre>
+          </details>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

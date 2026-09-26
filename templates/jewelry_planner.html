@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Jewelry Planner{% endblock %}
+{% block content %}
+<div class="planner-box">
+  <h2>💎 Jewelry Budget Planner</h2>
+  <p class="muted">Get elegant jewelry suggestions matched to your outfit and occasion.</p>
+  <form id="jewelryForm" class="form" enctype="multipart/form-data">
+    <label>Total Budget (INR) <input type="number" name="total_budget" required min="500" value="25000"></label>
+    <label>Occasion
+      <select name="occasion">
+        <option>Wedding</option><option>Engagement</option><option>Birthday</option>
+        <option>Festival</option><option>Anniversary</option><option>Casual</option>
+      </select>
+    </label>
+    <label>Style Preferences <input type="text" name="preferences" placeholder="Gold, minimal, ethnic…"></label>
+    <label>Upload Outfit Image (optional) <input type="file" name="image" accept="image/*"></label>
+    <button type="submit" class="btn btn-primary btn-block">Generate Recommendations ✨</button>
+    <p id="msg" class="msg"></p>
+  </form>
+</div>
+<div id="results"></div>
+<script>
+document.getElementById('jewelryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('msg');
+  msg.textContent = '🤖 AI is matching jewelry…'; msg.style.color = '#555';
+  const fd = new FormData(e.target);
+  try {
+    const r = await fetch('/generate-jewelry', { method: 'POST', body: fd });
+    if (!r.ok) throw new Error('Failed. Are you logged in?');
+    renderJewelry(await r.json());
+    msg.textContent = '✅ Done!'; msg.style.color = 'green';
+  } catch (err) { msg.textContent = '❌ ' + err.message; msg.style.color = 'red'; }
+});
+function renderJewelry(d) {
+  let html = `<div class="results-box"><h2>💎 Jewelry Recommendations</h2>
+    <p><strong>Total:</strong> ₹${d.total_budget.toFixed(2)} · <strong>Remaining:</strong> ₹${(d.remaining_budget||0).toFixed(2)}</p>`;
+  (d.jewelry_recommendations||[]).forEach(it => {
+    html += `<div class="item-card"><h4>${it.item_type} — ${it.style}</h4>
+      <p>${it.description}</p><p><strong>≈ ₹${it.estimated_price.toFixed(2)}</strong></p>
+      ${linksHtml(it.shopping_links)}</div>`;
+  });
+  if (d.styling_tips?.length) {
+    html += `<div class="tips"><h3>💡 Styling Tips</h3><ul>`;
+    d.styling_tips.forEach(t => html += `<li>${t}</li>`);
+    html += `</ul></div>`;
+  }
+  html += `</div>`;
+  document.getElementById('results').innerHTML = html;
+}
+function linksHtml(links) {
+  if (!links) return '';
+  let out = '<div class="links">';
+  for (const [k, v] of Object.entries(links))
+    out += `<a href="${v}" target="_blank" rel="noopener" class="link-pill">${k} →</a>`;
+  return out + '</div>';
+}
+</script>
+{% endblock %}
